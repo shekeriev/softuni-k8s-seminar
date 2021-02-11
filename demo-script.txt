@@ -227,16 +227,23 @@ vi 7-appb.yml
 kubectl apply -f 7-appb.yml
 
 kubectl get deployment
+
 kubectl describe deployment appb-deploy
+
 minikube service list
+
 kubectl get pods
 
 # Open a browser tab and navigate to the service url
+
+# Copy a pod's name and create a session to it to explore it further (substitute appb-deploy-xxxxxxxxxxx-xxxx with the name)
 
 kubectl exec -it appb-deploy-xxxxxxxxxxx-xxxx --container appb-container-1st -- bash
 
 kubectl exec -it appb-deploy-xxxxxxxxxxx-xxxx --container appb-container-2nd -- sh
 
-kubectl logs appb-deploy-5f9db4c66f-bqkd6 --container appb-container-1st
+# Copy a pod's name and check its logs (substitute appb-deploy-xxxxxxxxxxx-xxxx with the name)
+
+kubectl logs appb-deploy-xxxxxxxxxxx-xxxx --container appb-container-1st
 
 kubectl delete -f 7-appb.yml 
