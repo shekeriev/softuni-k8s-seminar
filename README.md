@@ -1,2 +1,2 @@
 # softuni-k8s-seminar
-Supporting files for a Kubernetes seminar at SoftUni (11.02.2021)
+Supporting files for the seminar First Steps with Kubernetes at SoftUni (11.02.2021)
