@@ -1,0 +1,242 @@
+# 
+# Install minikube
+# 
+
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+minikube version
+
+#
+# Explore minikube
+#
+
+minikube
+
+minikube status
+
+minikube start --dry-run=true
+
+minikube start --driver=virtualbox
+
+minikube ssh
+
+id
+
+docker version
+
+docker image ls
+
+docker container ps
+
+exit
+
+# 
+# Install kubectl 
+# 
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+kubectl version --client
+
+#
+# Explore kubectl
+#
+
+kubectl 
+
+kubectl cluster-info
+
+kubectl get pods
+
+kubectl get pods --all-namespaces
+
+kubectl get nodes
+
+kubectl get all --all-namespaces
+
+kubectl api-resources
+
+kubectl api-versions
+
+kubectl explain pod
+
+kubectl explain pod.spec
+
+kubectl explain pod.spec | grep required
+
+kubectl explain pod.spec.containers
+
+#
+# Work with pods
+#
+
+# Imperative creation of a pod with command
+
+kubectl run nginx-pod --image nginx
+
+kubectl get pods
+
+kubectl delete pod nginx-pod
+
+# Imperative creation with configuration file
+
+vi 1-appa-pod.yml 
+
+kubectl create -f 1-appa-pod.yml  
+
+kubectl get pods
+
+kubectl describe pod appa-pod 
+
+vimdiff 1-appa-pod.yml 2-appa-pod-ext.yml
+
+kubectl apply -f 2-appa-pod-ext.yml
+
+# Note the warning (because of the imperative creation)
+
+kubectl describe pod appa-pod 
+
+# Explore the lables section
+
+#
+# Work with services
+#
+
+kubectl expose pod appa-pod --name=appa-svc --target-port=80 --type=NodePort
+
+kubectl get svc appa-svc 
+
+kubectl describe svc appa-svc
+
+minikube service list
+
+# Copy the appa-svc url and paste it to browser
+
+kubectl delete svc appa-svc
+
+vi 3-appa-svc.yml
+ 
+kubectl apply -f 3-appa-svc.yml 
+
+kubectl describe svc appa-svc 
+
+# Note the Endpoints position
+
+minikube service list
+
+# Copy the appa-svc url and paste it to browser
+
+kubectl delete pod appa-pod
+
+# Refresh the open browser tab
+
+kubectl describe svc appa-svc 
+
+# Note the Endpoints position
+
+#
+# Work with replication controllers
+#
+
+vi 4-appa-rc.yml
+
+kubectl apply -f 4-appa-rc.yml
+
+kubectl get pods
+
+kubectl describe svc appa-svc
+
+kubectl get ep appa-svc
+
+kubectl get ep appa-svc -o json
+
+# Return to the browser and refresh a few times
+
+kubectl delete rc appa-rc
+
+#
+# Work with deployments (imperative)
+#
+
+kubectl create deployment appa-deploy --image=shekeriev/k8s-appa:v1 --replicas=2 --port=80
+
+kubectl scale deployment appa-deploy --replicas=10
+
+kubectl get pods -w
+
+kubectl delete deployment appa-deploy
+
+#
+# Work with deployments (declarative)
+#
+
+vi 5-appa-deploy-v1.yml
+
+kubectl apply -f 5-appa-deploy-v1.yml
+
+kubectl get pod -w
+
+kubectl get deployment -o wide
+
+# Refresh the open browser tab
+
+vimdiff 5-appa-deploy-v1.yml 6-appa-deploy-v2.yml 
+
+kubectl describe deployment appa-deploy 
+
+kubectl get rs
+
+kubectl describe rs 
+
+kubectl apply -f 6-appa-deploy-v2.yml --record
+
+kubectl rollout status deployment appa-deploy 
+
+# Refresh the open browser tab
+
+kubectl rollout history deployment appa-deploy 
+
+kubectl rollout undo deployment appa-deploy --to-revision=1
+
+kubectl rollout status deployment appa-deploy 
+
+# Refresh the open browser tab
+
+kubectl rollout history deployment appa-deploy
+
+#
+# Clean up
+#
+
+kubectl delete deployment appa-deploy
+
+kubectl delete service appa-svc
+
+kubectl get all --all-namespaces
+
+# 
+# A file with multiple resources and a pod with multiple containers
+#
+
+vi 7-appb.yml
+
+kubectl apply -f 7-appb.yml
+
+kubectl get deployment
+kubectl describe deployment appb-deploy
+minikube service list
+kubectl get pods
+
+# Open a browser tab and navigate to the service url
+
+kubectl exec -it appb-deploy-xxxxxxxxxxx-xxxx --container appb-container-1st -- bash
+
+kubectl exec -it appb-deploy-xxxxxxxxxxx-xxxx --container appb-container-2nd -- sh
+
+kubectl logs appb-deploy-5f9db4c66f-bqkd6 --container appb-container-1st
+
+kubectl delete -f 7-appb.yml 
