@@ -2,72 +2,100 @@
 # Install minikube
 # 
 
+# Download the minikube binary (check here for other OSes/options: https://minikube.sigs.k8s.io/docs/start/)
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 
+# "Install" the binary
 sudo install minikube-linux-amd64 /usr/local/bin/minikube
 
+# Check if the binary is reachable
 minikube version
 
 #
 # Explore minikube
 #
 
+# Check available commands
 minikube
 
+# Check the status of the minikube cluster
 minikube status
 
+# Check which driver (docker, virtualbox, etc.) will be used to start the cluster
 minikube start --dry-run=true
 
+# Start the cluster with the VirtualBox driver (you should have VirtualBox installed)
 minikube start --driver=virtualbox
 
+# Establish an SSH session to the virtual machine
 minikube ssh
 
+# Check the default user
 id
 
+# Check the installed version of Docker
 docker version
 
+# Check if there are any images available locally
 docker image ls
 
+# Check if there are any containers running
 docker container ps
 
+# Close the SSH session
 exit
 
 # 
 # Install kubectl 
 # 
 
+# Download the kbectl binary (check for other OSes/options: https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 
+# "Install" the binary
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
+# Check if the binary is reachable
 kubectl version --client
 
 #
 # Explore kubectl
 #
 
+# List all avilable commands
 kubectl 
 
+# Retrieve information for the cluser that is configured currently (this should be the minikube)
 kubectl cluster-info
 
+# Retrieve a list of all pods (in the default namespace)
 kubectl get pods
 
+# Get the pods in all namespaces
 kubectl get pods --all-namespaces
 
+# Retrieve information about the nodes (we have only one)
 kubectl get nodes
 
+# Retrieve a list of all resources in all namespaces
 kubectl get all --all-namespaces
 
+# Get information about all supported resources
 kubectl api-resources
 
+# List all supported API versions
 kubectl api-versions
 
+# Get information about the POD resource
 kubectl explain pod
 
+# Get information about the SPEC section of the POD resource
 kubectl explain pod.spec
 
+# Filter the required fields in the SPEC section of the POD resource
 kubectl explain pod.spec | grep required
 
+# Get information about the CONTAINERS portion of the SPEC section of the POD resource
 kubectl explain pod.spec.containers
 
 #
@@ -76,28 +104,38 @@ kubectl explain pod.spec.containers
 
 # Imperative creation of a pod with command
 
+# Create an NGINX based pod
 kubectl run nginx-pod --image nginx
 
+# Check the result
 kubectl get pods
 
+# Remove the pod
 kubectl delete pod nginx-pod
 
 # Imperative creation with configuration file
 
+# Check the contents of the fil
 vi 1-appa-pod.yml 
 
+# Create the pod in an imperative fashion but using a file
 kubectl create -f 1-appa-pod.yml  
 
+# Check the result
 kubectl get pods
 
+# Display detailed information about the pod
 kubectl describe pod appa-pod 
 
+# Compare the initial configuration file with its extended version
 vimdiff 1-appa-pod.yml 2-appa-pod-ext.yml
 
+# Apply the changes coming from the extended file
 kubectl apply -f 2-appa-pod-ext.yml
 
-# Note the warning (because of the imperative creation)
+# Note the warning (it is because of the imperative creation)
 
+# Display detailed information about the pod
 kubectl describe pod appa-pod 
 
 # Explore the lables section
@@ -106,144 +144,200 @@ kubectl describe pod appa-pod
 # Work with services
 #
 
+# Expose the service running on the pod and make it reachable on the IP address of our single-node cluster
 kubectl expose pod appa-pod --name=appa-svc --target-port=80 --type=NodePort
 
+# Display information about the service
 kubectl get svc appa-svc 
 
+# Show detailed information about the service
 kubectl describe svc appa-svc
 
+# Check how the service can be reached
 minikube service list
 
-# Copy the appa-svc url and paste it to browser
+# Copy the appa-svc url and paste it to a browser tab. You should see a working "application"
 
+# Remove the service
 kubectl delete svc appa-svc
 
+# Explore the configuration file that will create a similar service
 vi 3-appa-svc.yml
  
+# Create the service in a declarative manner
 kubectl apply -f 3-appa-svc.yml 
 
+# Display detailed information about the service
 kubectl describe svc appa-svc 
 
-# Note the Endpoints position
+# Note the Endpoints position. It contains a reference to the pod
 
+# Ask again for the available services
 minikube service list
 
-# Copy the appa-svc url and paste it to browser
+# Copy the appa-svc url and paste it to a browser tab. The "application" should be reachable
 
+# Remove the pod
 kubectl delete pod appa-pod
 
-# Refresh the open browser tab
+# Refresh the open browser tab. Now, the "application" should not be reachable
 
+# Show detailed information about the service
 kubectl describe svc appa-svc 
 
-# Note the Endpoints position
+# Note the Endpoints position. It is empty
 
 #
 # Work with replication controllers
 #
 
+# Explore the configuration file that will be used to create a replicaion controller
 vi 4-appa-rc.yml
 
+# Create the replication controller in a declarative manner
 kubectl apply -f 4-appa-rc.yml
 
+# Get list of pods in the default namespace
 kubectl get pods
 
+# Get detailed information about the service. Note the Endpoints position. It refers to multiple pods
 kubectl describe svc appa-svc
 
+# Show details about the Endpoints of the service
 kubectl get ep appa-svc
 
+# Show details about the Endpoints of the service in a JSON format
 kubectl get ep appa-svc -o json
 
-# Return to the browser and refresh a few times
+# Return to the browser and refresh a few times. Note that the "application" is served by different pods
 
+# Remove the replication controller
 kubectl delete rc appa-rc
 
 #
 # Work with deployments (imperative)
 #
 
+# Create a deployment with two pod replicas
 kubectl create deployment appa-deploy --image=shekeriev/k8s-appa:v1 --replicas=2 --port=80
 
+# Scale up the deployment to ten pod replicas
 kubectl scale deployment appa-deploy --replicas=10
 
+# Watch how the pod replicas are being created
 kubectl get pods -w
 
+# Remove the deployment together with the replicated pods
 kubectl delete deployment appa-deploy
 
 #
 # Work with deployments (declarative)
 #
 
+# Explore the configuration file that will be used to create a deployment
 vi 5-appa-deploy-v1.yml
 
+# Create the deployment in a declarative manner
 kubectl apply -f 5-appa-deploy-v1.yml
 
+# Watch while the pods are being created
 kubectl get pod -w
 
+# Ask for deployment status
+kubectl get deployment
+
+# Ask for a detailed deployment status
 kubectl get deployment -o wide
 
 # Refresh the open browser tab
 
+# Compare the two versions of the deployment
 vimdiff 5-appa-deploy-v1.yml 6-appa-deploy-v2.yml 
 
+# Retrieve detailed information about the current deployment
 kubectl describe deployment appa-deploy 
 
+# List current replica sets
 kubectl get rs
 
+# Retrieve detailed information about the only replice set (if there were many, we should have specified the name as well)
 kubectl describe rs 
 
+# Apply the newer deployment configuration but record the changes
 kubectl apply -f 6-appa-deploy-v2.yml --record
 
+# Whatch the deployment rollout. It is done one pod at a time
 kubectl rollout status deployment appa-deploy 
 
-# Refresh the open browser tab
+# Refresh the open browser tab. You will notice that some of the requests will be served by the old version of the "application" and others by the new one
 
+# Retrieve the history of the deployment
 kubectl rollout history deployment appa-deploy 
 
+# Undo the latest deployment and return the the previous version of the "application"
 kubectl rollout undo deployment appa-deploy --to-revision=1
 
+# Whatch the rollback process
 kubectl rollout status deployment appa-deploy 
 
-# Refresh the open browser tab
+# Refresh the open browser tab. You will notice that some of the requests will be served by the old version of the "application" and others by the new one
 
+# Retrieve the history of the deployment
 kubectl rollout history deployment appa-deploy
 
 #
 # Clean up
 #
 
+# Remove the deployment together with the replica set and all the pods
 kubectl delete deployment appa-deploy
 
+# Remove the service
 kubectl delete service appa-svc
 
+# Check that there are not any unwanted resources left
 kubectl get all --all-namespaces
 
 # 
 # A file with multiple resources and a pod with multiple containers
 #
 
+# Explore the configuration file. Note how the two resource are separated by "---"
 vi 7-appb.yml
 
+# Create the resources described in the file
 kubectl apply -f 7-appb.yml
 
+# List the deployments
 kubectl get deployment
 
+# Retrieve detailed information about the deployment
 kubectl describe deployment appb-deploy
 
+# List the available services
 minikube service list
 
+# List the pods in the default namespace
 kubectl get pods
 
 # Open a browser tab and navigate to the service url
 
 # Copy a pod's name and create a session to it to explore it further (substitute appb-deploy-xxxxxxxxxxx-xxxx with the name)
 
+# Explore the first container in the pod
 kubectl exec -it appb-deploy-xxxxxxxxxxx-xxxx --container appb-container-1st -- bash
 
+# Once done exploring, type the exit command to close the seesion
+
+# Explore the second container in the pod
 kubectl exec -it appb-deploy-xxxxxxxxxxx-xxxx --container appb-container-2nd -- sh
+
+# Once done exploring, type the exit command to close the seesion
 
 # Copy a pod's name and check its logs (substitute appb-deploy-xxxxxxxxxxx-xxxx with the name)
 
+# Check the logs of the first container
 kubectl logs appb-deploy-xxxxxxxxxxx-xxxx --container appb-container-1st
 
-kubectl delete -f 7-appb.yml 
+# Clean up by removing the resources created earlier
+kubectl delete -f 7-appb.yml
